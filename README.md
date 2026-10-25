@@ -6,6 +6,8 @@ StreetScene demonstrates how a collection of simple geometric shapes, textures, 
 
 There are no heavyweight graphics frameworks involved — just JavaScript, WebGL and a little imagination.
 
+https://browsergraphicsengine.github.io/StreetScene/
+
 ## What's inside?
 
 - A simple WebGL graphics engine
