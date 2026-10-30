@@ -31,6 +31,7 @@ let cube_texture_image = "images/building.png";
 let floor_texture_image = "images/streets.png";
 let sea_texture_image = "images/sea.png";
 let sky_texture_image = "images/sky.png";
+let railgun_texture_image = "images/bluecorerailgun.png";
 
 let characters_x = [
 -1500,-1100,-700,-300,100,500,900,1300,
@@ -93,6 +94,9 @@ let spriteVerticesBuffer;
 let spriteTallVerticesBuffer;
 let spriteVerticesTextureCoordBuffer;
 let spriteVerticesIndexBuffer;
+let gunVerticesBuffer;
+let gunVerticesTextureCoordBuffer;
+let gunVerticesIndexBuffer;
 let game_texture = [];
 let game_image = [];
 let floorImage;
@@ -171,23 +175,85 @@ let sprite_texture_coordinates = [
     0.1,  0.1,
     0.0,  0.1,
  ];
- 
-let sprite_vertex_indices = [
+
+ let sprite_vertex_indices = [
      0,  1,  2,   0,  2,  3,  // front
      4,  5,  6,   4,  6,  7,  // back
      8,  9, 10,   8, 10, 11,  // right
     12, 13, 14,  12, 14, 15, // left
     16, 17, 18,  16, 18, 19  // top
+  ];
+
+ let gun_vertices = [
+    // Front face
+    -1, 0,  1,
+     1, 0,  1,
+     1,  35,  1,
+    -1,  35,  1,
+    // Back face
+    -1, 0, -1,
+    -1,  35, -1,
+     1,  35, -1,
+     1, -0, -1,
+    // Right face
+     1, 0, -1,
+     1,  35, -1,
+     1,  35,  1,
+     1, 0,  1,
+    // Left face
+    -1, 0, -1,
+    -1, 0,  1,
+    -1,  35,  1,
+    -1,  35, -1,
+    // Top face
+    -1, 35, -1,
+    1, 35, -1,
+    1, 35,  6,
+    -1, 35,  6,
 ];
 
+let gun_texture_coordinates = [
 
+    0.0,  1.0,
+    1.0,  1.0,
+    1.0,  0.0,
+    0.0,  0.0,
+    
+    0.0,  1.0,
+    1.0,  1.0,
+    1.0,  0.0,
+    0.0,  0.0,
+	
+    0.0,  1.0,
+    1.0,  1.0,
+    1.0,  0.0,
+    0.0,  0.0,
+	
+    0.0,  1.0,
+    1.0,  1.0,
+    1.0,  0.0,
+    0.0,  0.0,
+	
+    0.0,  1.0,
+    1.0,  1.0,
+    1.0,  0.0,
+    0.0,  0.0,
+ ];
+
+ let gun_vertex_indices = [
+     0,  1,  2,   0,  2,  3,  // front
+     4,  5,  6,   4,  6,  7,  // back
+     8,  9, 10,   8, 10, 11,  // right
+    12, 13, 14,  12, 14, 15, // left
+    16, 17, 18,  16, 18, 19  // top
+  ];
+ 
 let sea_vertices = [
     -4500, -5, -4000,
     4500, -5, -4000,
     4500, -5, 4000,
     -4500, -5,  4000,
 ];
-
 	
 let floor_vertex_indices = [
     0,  1,  2,      
@@ -296,13 +362,16 @@ function GraphicsLoop(num_cubes) {
   // Clear the canvas before we start drawing on it
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-  // Set the drawing position to the "identity" matrix, which is the center of the scene.
+  // Set the drawing position to the "identity" matrix
+  // which is the center of the scene.
   loadIdentity();
 
   // Position the scene so the player sees it from the angle we wish
 	moveRotate(0, [1, 0, 0]);
   moveRotate(y_camera_angle, [1, 0, 0]);
   moveRotate(camera_angle, [0, 1, 0]);
+
+  //DrawGun();
 
   moveTranslate([x_location, y_location, z_location]);
   DrawScenery(num_cubes);
@@ -311,31 +380,22 @@ function GraphicsLoop(num_cubes) {
   frames++;
 }
 
-function DrawCar() {
-  
+function DrawGun() {
   movePushMatrix();
   moveRotate(reversed_camera_angle - 20, [0, 1, 0]);
- 
   movePushMatrix();
   moveTranslate([0, -38, 10]);
-  
-  gl.bindBuffer(gl.ARRAY_BUFFER, spriteVerticesTextureCoordBuffer);
+  gl.bindBuffer(gl.ARRAY_BUFFER, gunVerticesTextureCoordBuffer);
   gl.vertexAttribPointer(textureCoordAttribute, 2, gl.FLOAT, false, 0, 0);
   gl.activeTexture(gl.TEXTURE0);
-
-  gl.bindTexture(gl.TEXTURE_2D, game_texture[1]);
-
+  gl.bindTexture(gl.TEXTURE_2D, game_texture[8]);
   gl.uniform1i(gl.getUniformLocation(shaderProgram, "uSampler"), 0);
-
-  gl.bindBuffer(gl.ARRAY_BUFFER, spriteVerticesBuffer);
-
+  gl.bindBuffer(gl.ARRAY_BUFFER, gunVerticesBuffer);
   gl.vertexAttribPointer(vertexPositionAttribute, 3, gl.FLOAT, false, 0, 0);
-  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, spriteVerticesIndexBuffer);
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, gunVerticesIndexBuffer);
   setMatrixUniforms();
   gl.drawElements(gl.TRIANGLES, 30, gl.UNSIGNED_SHORT, 0);
- 
   movePopMatrix();
-
   movePopMatrix();
 }
 
@@ -1168,6 +1228,9 @@ function initBuffers(num_cubes,scenery_vertices,scenery_texture_coordinates,scen
   sceneryVerticesBuffer = generateBuffers(scenery_vertices,"ARRAY_BUFFER");
   sceneryVerticesTextureCoordBuffer = generateBuffers(scenery_texture_coordinates,"ARRAY_BUFFER");
   sceneryVerticesIndexBuffer = generateBuffers(scenery_vertex_indices,"ELEMENT_ARRAY_BUFFER");
+  gunVerticesBuffer = generateBuffers(gun_vertices,"ARRAY_BUFFER");
+  gunVerticesTextureCoordBuffer = generateBuffers(gun_texture_coordinates,"ARRAY_BUFFER");
+  gunVerticesIndexBuffer = generateBuffers(gun_vertex_indices,"ELEMENT_ARRAY_BUFFER");
   spriteVerticesBuffer = generateBuffers(sprite_vertices,"ARRAY_BUFFER");
   spriteVerticesTextureCoordBuffer = generateBuffers(sprite_texture_coordinates,"ARRAY_BUFFER");
   spriteVerticesIndexBuffer = generateBuffers(sprite_vertex_indices,"ELEMENT_ARRAY_BUFFER");
@@ -1200,7 +1263,7 @@ function initTextures() {
   PrepareGameTextures(cube_texture_image,5);
   PrepareGameTextures(floor_texture_image,6);
   PrepareGameTextures(sky_texture_image,7);
-  
+  PrepareGameTextures(railgun_texture_image,8);
 }
 
 function handleTextureLoaded(image, texture) {
